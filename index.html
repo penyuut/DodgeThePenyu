@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Dodge the Penyu!</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #333;
+      color: white;
+      text-align: center;
+    }
+
+    h1 {
+      margin: 20px;
+    }
+
+    #gameArea {
+      width: 400px;
+      height: 600px;
+      margin: 20px auto;
+      background: url('images/white.png') no-repeat center center;
+      background-size: cover;
+      border: 4px solid #fff;
+      position: relative;
+      overflow: hidden;
+      border-radius: 12px;
+    }
+
+    #bus {
+      width: 80px;
+      height: 120px;
+      background: url('images/bus.png') no-repeat center center;
+      background-size: contain;
+      position: absolute;
+      bottom: 20px;
+      left: 160px;
+    }
+
+    .penyu {
+      width: 65px;
+      height: 65px;
+      background: url('images/penyu.png') no-repeat center center;
+      background-size: cover;
+      position: absolute;
+      top: -70px;
+    }
+
+    #score {
+      font-size: 22px;
+      margin-top: 10px;
+    }
+
+    #startScreen,
+    #gameOver {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 400px;
+      height: 600px;
+      background: rgba(0, 0, 0, 0.8);
+      color: white;
+      z-index: 10;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+    }
+
+    button {
+      padding: 10px 20px;
+      font-size: 18px;
+      margin-top: 20px;
+      cursor: pointer;
+      border: none;
+      border-radius: 8px;
+      background-color: #28a745;
+      color: white;
+    }
+
+    button:hover {
+      background-color: #218838;
+    }
+
+    #controls {
+      margin-top: 20px;
+    }
+
+    #controls button {
+      padding: 15px 30px;
+      font-size: 24px;
+      margin: 0 10px;
+      border-radius: 12px;
+      background-color: #007bff;
+      color: white;
+    }
+
+    #controls button:hover {
+      background-color: #0056b3;
+    }
+  </style>
+</head>
+<body>
+  <h1>🐢 Dodge the Penyu!</h1>
+  <div id="score">Score: 0</div>
+
+  <div id="gameArea">
+    <div id="bus"></div>
+
+    <div id="startScreen">
+      <h2>Ready to Ride?</h2>
+      <button onclick="startGame()">Start Game</button>
+    </div>
+
+    <div id="gameOver" style="display: none;">
+      <h2>💥 Game Over!</h2>
+      <p id="finalScore"></p>
+      <button onclick="location.reload()">Play Again</button>
+    </div>
+  </div>
+
+  <div id="controls">
+    <button onclick="moveLeft()">⬅️</button>
+    <button onclick="moveRight()">➡️</button>
+  </div>
+
+  <!-- 🔊 Background Music -->
+  <audio id="bgMusic" loop>
+    <source src="sounds/bg-music.mp3" type="audio/mpeg" />
+    Your browser does not support the audio element.
+  </audio>
+
+  <script>
+    const gameArea = document.getElementById("gameArea");
+    const bus = document.getElementById("bus");
+    const scoreDisplay = document.getElementById("score");
+    const startScreen = document.getElementById("startScreen");
+    const gameOverScreen = document.getElementById("gameOver");
+    const finalScore = document.getElementById("finalScore");
+    const bgMusic = document.getElementById("bgMusic");
+
+    let busPos = 160;
+    let score = 0;
+    let gameRunning = false;
+
+    function startGame() {
+      startScreen.style.display = "none";
+      gameRunning = true;
+      bgMusic.play(); // 🔊 Play music
+
+      setInterval(() => {
+        if (gameRunning) createPenyu();
+      }, 1200);
+    }
+
+    function moveLeft() {
+      if (!gameRunning) return;
+      if (busPos > 10) {
+        busPos -= 20;
+        bus.style.left = busPos + "px";
+      }
+    }
+
+    function moveRight() {
+      if (!gameRunning) return;
+      if (busPos < 310) {
+        busPos += 20;
+        bus.style.left = busPos + "px";
+      }
+    }
+
+    // Optional: Keyboard support
+    document.addEventListener("keydown", function (e) {
+      if (!gameRunning) return;
+
+      if (e.key === "ArrowLeft") moveLeft();
+      if (e.key === "ArrowRight") moveRight();
+    });
+
+    function createPenyu() {
+      const penyu = document.createElement("div");
+      penyu.classList.add("penyu");
+
+      const penyuLeft = Math.floor(Math.random() * 6.5) * 60;
+      penyu.style.left = penyuLeft + "px";
+
+      gameArea.appendChild(penyu);
+
+      let penyuTop = 0;
+
+      const movePenyu = setInterval(() => {
+        if (!gameRunning) {
+          clearInterval(movePenyu);
+          return;
+        }
+
+        penyuTop += 5;
+        penyu.style.top = penyuTop + "px";
+
+        // Collision detection
+        if (
+          penyuTop > 480 &&
+          penyuTop < 600 &&
+          penyuLeft + 55 > busPos &&
+          penyuLeft < busPos + 80
+        ) {
+          gameRunning = false;
+          bgMusic.pause(); // 🔇 Stop music
+          finalScore.textContent = "Your Score: " + score;
+          gameOverScreen.style.display = "flex";
+          clearInterval(movePenyu);
+        }
+
+        if (penyuTop > 600) {
+          clearInterval(movePenyu);
+          penyu.remove();
+          score++;
+          scoreDisplay.textContent = "Score: " + score;
+        }
+      }, 30);
+    }
+  </script>
+</body>
+</html>
