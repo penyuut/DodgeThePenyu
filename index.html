@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Dodge the Penyu!</title>
   <style>
     * {
@@ -10,60 +11,62 @@
       padding: 0;
     }
 
-    body {
-      font-family: 'Segoe UI', sans-serif;
+    html, body {
+      height: 100%;
       background: #333;
+      font-family: 'Segoe UI', sans-serif;
       color: white;
       text-align: center;
     }
 
     h1 {
-      margin: 20px;
-    }
-
-    #gameArea {
-      width: 400px;
-      height: 600px;
-      margin: 20px auto;
-      background: url('images/white.png') no-repeat center center;
-      background-size: cover;
-      border: 4px solid #fff;
-      position: relative;
-      overflow: hidden;
-      border-radius: 12px;
-    }
-
-    #bus {
-      width: 80px;
-      height: 120px;
-      background: url('images/bus.png') no-repeat center center;
-      background-size: contain;
-      position: absolute;
-      bottom: 20px;
-      left: 160px;
-    }
-
-    .penyu {
-      width: 65px;
-      height: 65px;
-      background: url('images/penyu.png') no-repeat center center;
-      background-size: cover;
-      position: absolute;
-      top: -70px;
+      padding: 10px 0;
+      font-size: 1.5em;
     }
 
     #score {
-      font-size: 22px;
-      margin-top: 10px;
+      font-size: 1.2em;
+      margin-bottom: 10px;
     }
 
-    #startScreen,
-    #gameOver {
+    #gameArea {
+      position: relative;
+      width: 100%;
+      max-width: 480px;
+      aspect-ratio: 2/3;
+      margin: auto;
+      background: url('images/white.png') no-repeat center center;
+      background-size: cover;
+      border: 4px solid #fff;
+      border-radius: 12px;
+      overflow: hidden;
+    }
+
+    #bus {
+      width: 20%;
+      height: 18%;
+      background: url('images/bus.png') no-repeat center center;
+      background-size: contain;
+      position: absolute;
+      bottom: 5%;
+      left: 40%;
+    }
+
+    .penyu {
+      width: 15%;
+      height: 12%;
+      background: url('images/penyu.png') no-repeat center center;
+      background-size: cover;
+      position: absolute;
+      top: -20%;
+    }
+
+    #startScreen, #gameOver {
       position: absolute;
       top: 0;
       left: 0;
-      width: 400px;
-      height: 600px;
+      width: 100%;
+      height: 100%;
       background: rgba(0, 0, 0, 0.8);
       color: white;
       z-index: 10;
@@ -74,9 +77,9 @@
     }
 
     button {
-      padding: 10px 20px;
-      font-size: 18px;
-      margin-top: 20px;
+      padding: 12px 24px;
+      font-size: 1.2em;
+      margin-top: 15px;
       cursor: pointer;
       border: none;
       border-radius: 8px;
@@ -89,16 +92,17 @@
     }
 
     #controls {
+      display: flex;
+      justify-content: center;
+      gap: 20px;
       margin-top: 20px;
     }
 
     #controls button {
       padding: 15px 30px;
-      font-size: 24px;
-      margin: 0 10px;
+      font-size: 2em;
       border-radius: 12px;
       background-color: #007bff;
-      color: white;
     }
 
     #controls button:hover {
@@ -145,14 +149,14 @@
     const finalScore = document.getElementById("finalScore");
     const bgMusic = document.getElementById("bgMusic");
 
-    let busPos = 160;
+    let busPos = 40; // % left
     let score = 0;
     let gameRunning = false;
 
     function startGame() {
       startScreen.style.display = "none";
       gameRunning = true;
-      bgMusic.play(); // 🔊 Play music
+      bgMusic.play();
 
       setInterval(() => {
         if (gameRunning) createPenyu();
@@ -161,24 +165,22 @@
 
     function moveLeft() {
       if (!gameRunning) return;
-      if (busPos > 10) {
-        busPos -= 20;
-        bus.style.left = busPos + "px";
+      if (busPos > 0) {
+        busPos -= 10;
+        bus.style.left = busPos + "%";
       }
     }
 
     function moveRight() {
       if (!gameRunning) return;
-      if (busPos < 310) {
-        busPos += 20;
-        bus.style.left = busPos + "px";
+      if (busPos < 80) {
+        busPos += 10;
+        bus.style.left = busPos + "%";
       }
     }
 
-    // Optional: Keyboard support
     document.addEventListener("keydown", function (e) {
       if (!gameRunning) return;
-
       if (e.key === "ArrowLeft") moveLeft();
       if (e.key === "ArrowRight") moveRight();
     });
@@ -187,12 +189,11 @@
       const penyu = document.createElement("div");
       penyu.classList.add("penyu");
 
-      const penyuLeft = Math.floor(Math.random() * 6.5) * 60;
-      penyu.style.left = penyuLeft + "px";
-
+      const penyuLeft = Math.floor(Math.random() * 6.5) * 15;
+      penyu.style.left = penyuLeft + "%";
       gameArea.appendChild(penyu);
 
-      let penyuTop = 0;
+      let penyuTop = -20;
 
       const movePenyu = setInterval(() => {
         if (!gameRunning) {
@@ -200,24 +201,26 @@
           return;
         }
 
-        penyuTop += 5;
-        penyu.style.top = penyuTop + "px";
+        penyuTop += 1.2;
+        penyu.style.top = penyuTop + "%";
 
-        // Collision detection
+        const penyuBox = penyu.getBoundingClientRect();
+        const busBox = bus.getBoundingClientRect();
+
         if (
-          penyuTop > 480 &&
-          penyuTop < 600 &&
-          penyuLeft + 55 > busPos &&
-          penyuLeft < busPos + 80
+          penyuBox.bottom > busBox.top &&
+          penyuBox.top < busBox.bottom &&
+          penyuBox.right > busBox.left &&
+          penyuBox.left < busBox.right
         ) {
           gameRunning = false;
-          bgMusic.pause(); // 🔇 Stop music
+          bgMusic.pause();
           finalScore.textContent = "Your Score: " + score;
           gameOverScreen.style.display = "flex";
           clearInterval(movePenyu);
         }
 
-        if (penyuTop > 600) {
+        if (penyuTop > 100) {
           clearInterval(movePenyu);
           penyu.remove();
           score++;
